@@ -16,6 +16,7 @@ namespace Ecom.API
             builder.Services.AddSwaggerGen();
 
             builder.Services.infrastructureConfiguration(builder.Configuration);
+            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             var app = builder.Build();
 
