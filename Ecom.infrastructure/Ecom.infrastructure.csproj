@@ -25,4 +25,8 @@
     <ProjectReference Include="..\Ecom.Core\Ecom.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Repositories\Service\" />
+  </ItemGroup>
+
 </Project>

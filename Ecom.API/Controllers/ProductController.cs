@@ -1,4 +1,6 @@
 using AutoMapper;
+using Ecom.Core.DTO;
+using Ecom.Core.Entites.Product;
 using Ecom.Core.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,13 +21,14 @@ namespace Ecom.API.Controllers
             {
                 var products = await unitOfWork.ProductRepository
                 .GetAllAsync(x => x.Category, x => x.Photos);
-                if (products == null || products.Count() == 0)
+                var result = mapper.Map<List<ProductDTO>>(products);
+                if (result == null || result.Count() == 0)
                 {
                     return NotFound("No products found.");
                 }
                 else
                 {
-                    return Ok(products);
+                    return Ok(result);
                 }
             }
             catch (Exception ex)
@@ -39,14 +42,16 @@ namespace Ecom.API.Controllers
         {
             try
             {
-                var product = await unitOfWork.ProductRepository.GetByIdAsync(id);
-                if (product == null)
+                var product = await unitOfWork.ProductRepository
+                .GetByIdAsync(id, x => x.Category, x => x.Photos);
+                var result = mapper.Map<ProductDTO>(product);
+                if (result == null)
                 {
                     return NotFound($"Product with ID {id} not found.");
                 }
                 else
                 {
-                    return Ok(product);
+                    return Ok(result);
                 }
             }
             catch (Exception ex)
@@ -54,6 +59,32 @@ namespace Ecom.API.Controllers
                 return StatusCode(500, $"An error occurred while retrieving the product: {ex.Message}");
             }
         }
+
+        [HttpPost("Add-product")]
+        public async Task<IActionResult> addProduct(ProductDTO product)
+        {
+            try
+            {
+                if (product == null)
+                {
+                    return BadRequest("Product is Null");
+                }
+
+                var newProduct = mapper.Map<Product>(product);
+
+                await unitOfWork.ProductRepository.AddAsync(newProduct);
+
+                return Ok("Product add successfully.");
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while adding the product: {ex.Message}");
+            }
+
+        }
+
+
 
 
 
