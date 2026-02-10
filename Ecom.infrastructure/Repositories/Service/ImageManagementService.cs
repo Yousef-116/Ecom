@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Ecom.Core.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
@@ -12,13 +12,41 @@ public class ImageManagementService : IImageManagementService
     {
         this.fileProvider = fileProvider;
     }
-    public Task<List<string>> AddImageAsync(IFormFileCollection files, string src)
+    public async Task<List<string>> AddImageAsync(IFormFileCollection files, string src)
     {
-        throw new NotImplementedException();
+        var savedImageSrc = new List<string>();
+
+        var rootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+        var imagesPath = Path.Combine(rootPath, "Images", src);
+
+        // 🔥 Ensure directories exist
+        if (!Directory.Exists(imagesPath))
+        {
+            Directory.CreateDirectory(imagesPath);
+        }
+
+        foreach (var image in files)
+        {
+            if (image.Length <= 0) continue;
+
+            var imageName = Path.GetFileName(image.FileName); // safety
+            var imagePath = Path.Combine(imagesPath, imageName);
+            var imageSrc = $"/Images/{src}/{imageName}";
+
+            using var stream = new FileStream(imagePath, FileMode.Create);
+            await image.CopyToAsync(stream);
+
+            savedImageSrc.Add(imageSrc);
+        }
+
+        return savedImageSrc;
     }
 
-    public Task DeleteImageAsync(string src)
+
+    public void DeleteImageAsync(string src)
     {
-        throw new NotImplementedException();
+        var info = fileProvider.GetFileInfo(src);
+        var root = info.PhysicalPath;
+        File.Delete(root);
     }
 }

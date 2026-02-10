@@ -15,13 +15,14 @@ namespace Ecom.infrastructure.Data.Config
         {
             builder.Property(x => x.Name).IsRequired().HasMaxLength(100);
             builder.Property(x => x.Description).IsRequired();
-            builder.Property(x => x.Price).IsRequired().HasColumnType("decimal(18,2)");
+            builder.Property(x => x.OldPrice).IsRequired().HasColumnType("decimal(18,2)");
+            builder.Property(x => x.NewPrice).IsRequired().HasColumnType("decimal(18,2)");
             builder.Property(x => x.Id).IsRequired();
             builder.HasData(
-                new Product { Id = 1, Name = "Smartphone", Description = "Latest model smartphone with advanced features", Price = 699.99m, CategoryId = 1 },
-                new Product { Id = 2, Name = "Laptop", Description = "High-performance laptop for work and gaming", Price = 1299.99m, CategoryId = 1 },
-                new Product { Id = 3, Name = "T-Shirt", Description = "Comfortable cotton t-shirt in various sizes", Price = 19.99m, CategoryId = 2 },
-                new Product { Id = 4, Name = "Blender", Description = "Powerful blender for smoothies and food preparation", Price = 89.99m, CategoryId = 3 }
+                new Product { Id = 1, Name = "Smartphone", Description = "Latest model smartphone with advanced features", OldPrice = 699.99m,NewPrice =100.1m, CategoryId = 1 },
+                new Product { Id = 2, Name = "Laptop", Description = "High-performance laptop for work and gaming", OldPrice = 1299.99m,NewPrice =100.1m, CategoryId = 1 },
+                new Product { Id = 3, Name = "T-Shirt", Description = "Comfortable cotton t-shirt in various sizes", OldPrice = 19.99m,NewPrice =100.1m, CategoryId = 2 },
+                new Product { Id = 4, Name = "Blender", Description = "Powerful blender for smoothies and food preparation", OldPrice = 89.99m,NewPrice =100.1m, CategoryId = 3 }
                 );
         }
     }

@@ -2,6 +2,7 @@
 using Ecom.infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -9,9 +10,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Ecom.infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260210000437_updateProduct")]
+    partial class updateProduct
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -88,6 +91,38 @@ namespace Ecom.infrastructure.Data.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("Photos");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ImageName = "https://example.com/photo1.jpg",
+                            ProductId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            ImageName = "https://example.com/photo2.jpg",
+                            ProductId = 1
+                        },
+                        new
+                        {
+                            Id = 3,
+                            ImageName = "https://example.com/photo3.jpg",
+                            ProductId = 2
+                        },
+                        new
+                        {
+                            Id = 4,
+                            ImageName = "https://example.com/photo4.jpg",
+                            ProductId = 3
+                        },
+                        new
+                        {
+                            Id = 5,
+                            ImageName = "https://example.com/photo5.jpg",
+                            ProductId = 4
+                        });
                 });
 
             modelBuilder.Entity("Ecom.Core.Entites.Product.Product", b =>

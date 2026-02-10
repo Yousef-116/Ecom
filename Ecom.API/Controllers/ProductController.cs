@@ -61,18 +61,18 @@ namespace Ecom.API.Controllers
         }
 
         [HttpPost("Add-product")]
-        public async Task<IActionResult> addProduct(ProductDTO product)
+        public async Task<IActionResult> addProduct(AddProductDTO productDTO)
         {
             try
             {
-                if (product == null)
+                if (productDTO == null)
                 {
                     return BadRequest("Product is Null");
                 }
 
-                var newProduct = mapper.Map<Product>(product);
+                //var newProduct = mapper.Map<Product>(product);
 
-                await unitOfWork.ProductRepository.AddAsync(newProduct);
+                await unitOfWork.ProductRepository.AddAsync(productDTO);
 
                 return Ok("Product add successfully.");
 
