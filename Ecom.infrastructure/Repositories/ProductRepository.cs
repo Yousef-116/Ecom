@@ -6,6 +6,7 @@ using Ecom.Core.Services;
 using Ecom.infrastructure.Data;
 using Ecom.infrastructure.Repositries;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,6 +48,59 @@ namespace Ecom.infrastructure.Repositories
             await context.SaveChangesAsync();
 
             return true;
+
+        }
+
+        public async Task DeleteAsync(Product product)
+        {
+            var photos = await context.Photos.Where(ph => ph.ProductId == product.Id).ToListAsync();
+            foreach (var photo in photos)
+            {
+                imageManagementService.DeleteImageAsync(photo.ImageName);
+            }
+            context.Products.Remove(product);
+            await context.SaveChangesAsync();
+
+        }
+
+        public async Task<bool> UpdateAsync(int id ,UpdateProductDTO productDTO)
+        {
+            if (productDTO == null) return false;
+
+            var UpdateProduct = await context.Products
+                .Include(m => m.Category)
+                .Include(p=> p.Photos)
+                .FirstOrDefaultAsync(pro => pro.Id == id); 
+
+            if(UpdateProduct == null) return false;
+
+            mapper.Map(productDTO, UpdateProduct);
+
+            //await context.Products.Update(product);
+            var photos = await context.Photos.Where(pho => pho.ProductId == id).ToListAsync();
+
+            foreach (var photo in photos)
+            {
+                imageManagementService.DeleteImageAsync(photo.ImageName);
+            }
+            context.Photos.RemoveRange(photos);
+
+            var imagePaths = await imageManagementService
+                .AddImageAsync(productDTO.Photo, productDTO.Name);
+
+            var newphotos = imagePaths
+            .Select(path => new Photo
+            {
+                ImageName = path,
+                ProductId = id
+            });
+
+
+            await context.Photos.AddRangeAsync(newphotos);
+            await context.SaveChangesAsync();
+
+            return true;
+
 
         }
     }

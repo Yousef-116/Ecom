@@ -84,7 +84,47 @@ namespace Ecom.API.Controllers
 
         }
 
+        [HttpPut("Update-Product/{id}")]
+        //[Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateProduct(int id,[FromForm] UpdateProductDTO productDTO)
+        {
+            try
+            {
+                if (productDTO == null)
+                {
+                    return BadRequest("Product data is null.");
+                }
 
+                await unitOfWork.ProductRepository.UpdateAsync(id, productDTO);
+
+                return Ok("Product updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while updating the Product: {ex.Message}");
+            }
+
+
+        }
+
+
+        [HttpDelete("Delete-Product/{id}")]
+        public async Task<IActionResult> DeleteProduct(int id) { 
+            
+            try
+            {
+                var product = await unitOfWork.ProductRepository.GetByIdAsync(id);
+
+
+                await unitOfWork.ProductRepository.DeleteAsync(product);
+
+
+                return Ok("Product Deleted successfully.");
+            }catch(Exception ex)
+            {
+                return StatusCode(500, $"An Error occurred while Deleting the Product:{ex.Message}");
+            }
+        }
 
 
 
