@@ -3,8 +3,10 @@ using Ecom.Core.DTO;
 using Ecom.Core.Entites.Product;
 using Ecom.Core.Interfaces;
 using Ecom.Core.Services;
+using Ecom.Core.Sharing;
 using Ecom.infrastructure.Data;
 using Ecom.infrastructure.Repositries;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -27,42 +29,50 @@ namespace Ecom.infrastructure.Repositories
             this.imageManagementService = imageManagementService;
         }
 
-        public async Task<List<ProductDTO>> GetAllAsync(string sort,int? categroyId)
+        public async Task<List<ProductDTO>> GetAllAsync( ProductParams productParams)
         {
+            
             var query = context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Photos)
                 .AsNoTracking();
 
-            if(categroyId.HasValue)
+            if (!string.IsNullOrEmpty(productParams.Search))
             {
-                query = query.Where(p => p.CategoryId == categroyId.Value);
-            }
-            if (query != null)
-            {
-                switch (sort)
+                var words = productParams.Search
+                    .ToLower()
+                    .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (var word in words)
                 {
-                    case "PriceAsn":
-                        query = query.OrderBy(p => p.NewPrice);
-
-                        break;
-                    case "PriceDes":
-                        query = query.OrderByDescending(p => p.NewPrice);
-
-                        break;
-                    default:
-                        query = query.OrderBy(p => p.Name);
-
-                        break;
-
+                    query = query.Where(p =>
+                        p.Name.ToLower().Contains(word) ||
+                        p.Description.ToLower().Contains(word));
                 }
             }
-            
-            var result = mapper.Map<List<ProductDTO>>(query);
 
 
-            return result;
+
+            if (productParams.CategoryId.HasValue)
+                query = query.Where(p => p.CategoryId == productParams.CategoryId.Value);
+
+            query = productParams.Sort switch
+            {
+                "PriceAsn" => query.OrderBy(p => p.NewPrice),
+                "PriceDes" => query.OrderByDescending(p => p.NewPrice),
+                _ => query.OrderBy(p => p.Name)
+            };
+
+            var totalCount = await query.CountAsync();
+
+            var products = await query
+                .Skip((productParams.PageNumber - 1) * productParams.PageSize)
+                .Take(productParams.PageSize)
+                .ToListAsync();
+
+            return mapper.Map<List<ProductDTO>>(products);
         }
+
         public async Task<bool> AddAsync(AddProductDTO productDTO)
         {
             if (productDTO == null) return false;
@@ -76,8 +86,10 @@ namespace Ecom.infrastructure.Repositories
             var imagePaths = await imageManagementService.AddImageAsync(productDTO.Photo, productDTO.Name);
 
             var photos = imagePaths
-             .Select(path => new Photo { 
-                 ImageName = path ,ProductId = product.Id
+             .Select(path => new Photo
+             {
+                 ImageName = path,
+                 ProductId = product.Id
              });
 
             await context.Photos.AddRangeAsync(photos);
@@ -99,16 +111,16 @@ namespace Ecom.infrastructure.Repositories
 
         }
 
-        public async Task<bool> UpdateAsync(int id ,UpdateProductDTO productDTO)
+        public async Task<bool> UpdateAsync(int id, UpdateProductDTO productDTO)
         {
             if (productDTO == null) return false;
 
             var UpdateProduct = await context.Products
                 .Include(m => m.Category)
-                .Include(p=> p.Photos)
-                .FirstOrDefaultAsync(pro => pro.Id == id); 
+                .Include(p => p.Photos)
+                .FirstOrDefaultAsync(pro => pro.Id == id);
 
-            if(UpdateProduct == null) return false;
+            if (UpdateProduct == null) return false;
 
             mapper.Map(productDTO, UpdateProduct);
 

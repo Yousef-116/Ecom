@@ -19,7 +19,7 @@ public class ImageManagementService : IImageManagementService
         var rootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
         var imagesPath = Path.Combine(rootPath, "Images", src);
 
-        // 🔥 Ensure directories exist
+
         if (!Directory.Exists(imagesPath))
         {
             Directory.CreateDirectory(imagesPath);

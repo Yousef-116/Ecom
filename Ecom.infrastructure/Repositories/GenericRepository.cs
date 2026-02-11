@@ -80,6 +80,11 @@ namespace Ecom.infrastructure.Repositries
             //throw new NotImplementedException();
         }
 
+        public async Task<int> GetCountAsync()
+        {
+           return await _context.Set<T>().CountAsync();
+        }
+
         public async Task UpdateAsync(T entity)
         {
             _context.Set<T>().Update(entity);
