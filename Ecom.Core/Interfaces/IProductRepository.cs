@@ -1,4 +1,5 @@
-﻿using Ecom.Core.DTO;
+﻿
+using Ecom.Core.DTO;
 using Ecom.Core.Entites.Product;
 using System;
 using System.Collections.Generic;
@@ -11,9 +12,9 @@ namespace Ecom.Core.Interfaces
     public interface IProductRepository : IGenericRepository<Product>
     {
         // for future specific methods related to product repository
+        Task<List<ProductDTO>> GetAllAsync(string sort,int? categroyId);
         Task<bool> AddAsync(AddProductDTO product);
         Task<bool> UpdateAsync(int id ,UpdateProductDTO product);
-
         Task DeleteAsync(Product product);
     }
 }

@@ -15,27 +15,16 @@ namespace Ecom.API.Controllers
         }
 
         [HttpGet("get-all")]
-        public async Task<IActionResult> get()
+        public async Task<IActionResult> Get(int? categroyId  , string? sort = "" ) 
         {
-            try
-            {
-                var products = await unitOfWork.ProductRepository
-                .GetAllAsync(x => x.Category, x => x.Photos);
-                var result = mapper.Map<List<ProductDTO>>(products);
-                if (result == null || result.Count() == 0)
-                {
-                    return NotFound("No products found.");
-                }
-                else
-                {
-                    return Ok(result);
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred while retrieving products: {ex.Message}");
-            }
+
+            var products = await unitOfWork.ProductRepository.GetAllAsync(sort,categroyId);
+
+            return products.Any()
+                ? Ok(products)
+                : NotFound("No products found.");
         }
+
 
         [HttpGet("get-by-id/{id}")]
         public async Task<IActionResult> getById(int id)
@@ -86,7 +75,7 @@ namespace Ecom.API.Controllers
 
         [HttpPut("Update-Product/{id}")]
         //[Consumes("multipart/form-data")]
-        public async Task<IActionResult> UpdateProduct(int id,[FromForm] UpdateProductDTO productDTO)
+        public async Task<IActionResult> UpdateProduct(int id, [FromForm] UpdateProductDTO productDTO)
         {
             try
             {
@@ -109,8 +98,9 @@ namespace Ecom.API.Controllers
 
 
         [HttpDelete("Delete-Product/{id}")]
-        public async Task<IActionResult> DeleteProduct(int id) { 
-            
+        public async Task<IActionResult> DeleteProduct(int id)
+        {
+
             try
             {
                 var product = await unitOfWork.ProductRepository.GetByIdAsync(id);
@@ -120,7 +110,8 @@ namespace Ecom.API.Controllers
 
 
                 return Ok("Product Deleted successfully.");
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return StatusCode(500, $"An Error occurred while Deleting the Product:{ex.Message}");
             }

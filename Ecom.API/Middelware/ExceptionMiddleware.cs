@@ -86,10 +86,10 @@ public class ExceptionMiddleware
         content.Response.Headers["X-Content-Type-Options"] = "nosniff";
         content.Response.Headers["X-XSS-Protection"] = "1;mode=block";
         content.Response.Headers["X-Frame-Options"] = "DENY";
-        content.Response.Headers["Content-Security-Policy"] =
-            "default-src 'self'; img-src 'self' data:; script-src 'self'";
-        content.Response.Headers["Referrer-Policy"] = "no-referrer";
-        content.Response.Headers["Strict-Transport-Security"] =
-            "max-age=31536000; includeSubDomains";
+        //content.Response.Headers["Content-Security-Policy"] =
+        //    "default-src 'self'; img-src 'self' data:; script-src 'self'";
+        //content.Response.Headers["Referrer-Policy"] = "no-referrer";
+        //content.Response.Headers["Strict-Transport-Security"] =
+        //    "max-age=31536000; includeSubDomains";
     }
 }
