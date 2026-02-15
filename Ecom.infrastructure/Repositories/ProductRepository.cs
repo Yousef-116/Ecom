@@ -29,7 +29,7 @@ namespace Ecom.infrastructure.Repositories
             this.imageManagementService = imageManagementService;
         }
 
-        public async Task<List<ProductDTO>> GetAllAsync( ProductParams productParams)
+        public async Task<ReturnProductListDTO> GetAllAsync( ProductParams productParams)
         {
             
             var query = context.Products
@@ -63,14 +63,19 @@ namespace Ecom.infrastructure.Repositories
                 _ => query.OrderBy(p => p.Name)
             };
 
-            var totalCount = await query.CountAsync();
+            //var totalCount = await query.CountAsync();
+            ReturnProductListDTO productListDTO = new ReturnProductListDTO();
+            productListDTO.TotalCount = await query.CountAsync();
 
             var products = await query
                 .Skip((productParams.PageNumber - 1) * productParams.PageSize)
                 .Take(productParams.PageSize)
                 .ToListAsync();
 
-            return mapper.Map<List<ProductDTO>>(products);
+            productListDTO.Products = mapper.Map<List<ProductDTO>>(products);
+
+            return productListDTO;
+
         }
 
         public async Task<bool> AddAsync(AddProductDTO productDTO)

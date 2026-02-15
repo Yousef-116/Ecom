@@ -17,18 +17,23 @@ namespace Ecom.API.Controllers
         }
 
         [HttpGet("get-all")]
-        public async Task<IActionResult> Get( [FromQuery] ProductParams productParams)
+        public async Task<IActionResult> Get([FromQuery] ProductParams productParams)
         {
             var products = await unitOfWork.ProductRepository
                 .GetAllAsync(productParams);
-            int TotalCount = await unitOfWork.ProductRepository.GetCountAsync();
-            return products.Any()
-                ? Ok(new Pagination<ProductDTO>(
-                    productParams.PageNumber, 
+            //int TotalCount = await unitOfWork.ProductRepository.GetCountAsync();
+            return Ok(new Pagination<ProductDTO>(
+                    productParams.PageNumber,
                     productParams.PageSize,
-                    TotalCount,
-                    products))
-                : NotFound("No products found.");
+                    products.TotalCount,
+                    products.Products));
+            // return products.Any()
+            // ? Ok(new Pagination<ProductDTO>(
+            //     productParams.PageNumber, 
+            //     productParams.PageSize,
+            //     TotalCount,
+            //     products))
+            // : NotFound("No products found.");
         }
 
 

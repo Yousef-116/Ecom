@@ -13,6 +13,12 @@ public record ProductDTO
     public string CategoryName { get; set; }
 }
 
+public record ReturnProductListDTO
+{
+    public List<ProductDTO> Products { get; set; }
+    public int TotalCount { get; set; }
+}
+
 public record PhotoDTO
 {
     public string ImageName { get; set; }

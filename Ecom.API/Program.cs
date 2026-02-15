@@ -13,7 +13,7 @@ namespace Ecom.API
             builder.Services.AddCors(op =>
             op.AddPolicy("CORSPolicy", builder =>
             {
-                builder.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:4200").AllowCredentials();
+                builder.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:4200").AllowCredentials();
             })
             );
 
@@ -37,6 +37,7 @@ namespace Ecom.API
             app.UseCors("CORSPolicy");
             
             app.UseMiddleware<ExceptionMiddleware>();
+            app.UseStaticFiles();
 
             app.UseStatusCodePagesWithReExecute("/errors/{0}");
 
