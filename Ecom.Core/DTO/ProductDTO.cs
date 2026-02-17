@@ -5,6 +5,7 @@ namespace Ecom.Core.DTO;
 
 public record ProductDTO
 {
+    public int Id { get; set; }
     public string Name { get; set; }
     public string Description { get; set; }
     public decimal OldPrice { get; set; }
