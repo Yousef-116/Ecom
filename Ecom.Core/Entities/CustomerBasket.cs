@@ -8,17 +8,17 @@ namespace Ecom.Core.Entities
 {
     public class CustomerBasket
     {
+        public CustomerBasket() { }
 
-        public CustomerBasket()
-        {
-            
-        }
         public CustomerBasket(string id)
         {
             this.id = id;
         }
-        public string id { get; set; }
-        public List<BasketItem> basketItem { get; set; } = new List<BasketItem>();
 
+        public string id { get; set; }
+
+        public List<BasketItem> BasketItems { get; set; } = new();
     }
+
 }
+
