@@ -14,15 +14,13 @@ namespace Ecom.Core.Sharing
             string encodeToken = Uri.EscapeDataString(token);
             return $@"
                 <html>
-            <h1>{message}</h1>  
-<hr>
-<br>
-            <p>Click the link below:</p>
-
-<a href=""http://localhost:4200/Account/{component}?email={email}&code={encodeToken}"" >Active {message} Click Here</a>
-
-</html>
-";
+                <h1>{message}</h1>  
+                <hr>
+                <br>
+                <p>Click the link below:</p>
+                <a href=""http://localhost:4200/Account/{component}?email={email}&code={encodeToken}"" >Active {message} Click Here</a>
+                </html>
+                ";
 
         }
     }

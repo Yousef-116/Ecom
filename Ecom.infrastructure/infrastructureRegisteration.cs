@@ -18,6 +18,11 @@ namespace Ecom.infrastructure
         {
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            //emial sender
+            services.AddScoped<IEmailService, EmailService>();
+
+            //token generator
+            services.AddScoped<IGenerateToken, GenerateToken>();
 
             //apply redis
             services.AddSingleton<IConnectionMultiplexer>(i =>
