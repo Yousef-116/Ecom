@@ -28,23 +28,23 @@ namespace Ecom.API
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-            app.UseCors("CORSPolicy");
-            
-            app.UseMiddleware<ExceptionMiddleware>();
-            app.UseStaticFiles();
-
-            app.UseStatusCodePagesWithReExecute("/errors/{0}");
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
+            app.UseStaticFiles();
 
+            app.UseCors("CORSPolicy");
+
+            app.UseMiddleware<ExceptionMiddleware>();
+
+            app.UseAuthentication();
+
+            app.UseAuthorization();
 
             app.MapControllers();
 

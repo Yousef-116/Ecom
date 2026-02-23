@@ -1,14 +1,21 @@
-﻿using Ecom.Core.Interfaces;
+﻿using Ecom.Core.Entities;
+using Ecom.Core.Interfaces;
 using Ecom.Core.Services;
 using Ecom.infrastructure.Data;
 using Ecom.infrastructure.Repositories;
 using Ecom.infrastructure.Repositories.Service;
 using Ecom.infrastructure.Repositries;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.IdentityModel.Tokens;
+using Org.BouncyCastle.Tls;
 using StackExchange.Redis;
+using System.Text;
 
 namespace Ecom.infrastructure
 {
@@ -44,6 +51,59 @@ namespace Ecom.infrastructure
                 );
 
             });
+
+            services.AddIdentity<AppUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
+
+
+            services.AddAuthentication
+                (options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+
+
+
+                }).AddCookie(options =>
+                {
+                    options.Cookie.Name = "token";
+                    options.Events.OnRedirectToLogin = context =>
+                    {
+                        context.Response.StatusCode = 401; // Unauthorized
+                        return Task.CompletedTask;
+                    };
+
+
+                }).AddJwtBearer(options =>
+                {
+                    options.RequireHttpsMetadata = false;
+                    options.SaveToken = true;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Token:Secret"])),
+                        ValidateIssuer = true,
+                        ValidIssuer = configuration["Token:Issure"],
+                        ValidateAudience = false,
+                        ClockSkew = TimeSpan.Zero
+
+                        //ValidateLifetime = true,
+                        //ValidAudience = configuration["Token:Issure"],
+                    };
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["token"];
+                            if (!string.IsNullOrEmpty(accessToken))
+                            {
+                                context.Token = accessToken;
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
+                }); 
+
             return services;
         }
     }
