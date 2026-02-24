@@ -87,7 +87,7 @@ namespace Ecom.infrastructure.Repositories
         //}
 
         public async Task<AuthResponse> RegisterAsync(RegisterDTO registerDTO)
-        {
+        { 
             try
             {
                 if (registerDTO == null)
@@ -103,7 +103,7 @@ namespace Ecom.infrastructure.Repositories
                 {
                     UserName = registerDTO.UserName,
                     Email = registerDTO.Email,
-                    DisplayName = registerDTO.UserName,
+                    DisplayName = registerDTO.DisplayName,
                     Address = new Address
                     {
                         FirstName = "N/A",

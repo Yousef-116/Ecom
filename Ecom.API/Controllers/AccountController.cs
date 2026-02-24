@@ -55,7 +55,7 @@ namespace Ecom.API.Controllers
             }
             return BadRequest("Invalid Activation Code");
         }
-        [HttpPost("send-email-forget-password")]
+        [HttpGet("send-email-forget-password")]
         public async Task<IActionResult> SendEmailForForgetPassword(string email)
         {
             var result = await unitOfWork.Auth.SendEmialForForgetPasswordAsync(email);
@@ -66,8 +66,16 @@ namespace Ecom.API.Controllers
             return BadRequest("Failed to Send Email");
         }
 
-
-
-
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordDTO resetPasswordDto)
+        {
+            var result = await unitOfWork.Auth.ResetPasswordAsync(resetPasswordDto);
+            if (result.Success)
+            {
+                return Ok($"Password Reset Successfully {result.Message}");
+            }
+            return BadRequest($"Failed to Reset Password{result.Message}");
+        }
     }
 }
+

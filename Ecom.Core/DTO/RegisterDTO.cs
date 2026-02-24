@@ -14,6 +14,8 @@ namespace Ecom.Core.DTO
     public record RegisterDTO :LoginDTO
     {
         public string UserName{ get; set; }
+
+        public string DisplayName { get; set; }
     }
 
     public record ResetPasswordDTO :LoginDTO

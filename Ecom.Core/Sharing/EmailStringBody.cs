@@ -18,7 +18,7 @@ namespace Ecom.Core.Sharing
                 <hr>
                 <br>
                 <p>Click the link below:</p>
-                <a href=""http://localhost:4200/Account/{component}?email={email}&code={encodeToken}"" >Active {message} Click Here</a>
+                <a href=""http://localhost:4200/account/{component}?email={email}&code={encodeToken}"" >Active {message} Click Here</a>
                 </html>
                 ";
 
