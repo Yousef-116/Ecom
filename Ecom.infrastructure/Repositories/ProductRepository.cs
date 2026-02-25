@@ -6,14 +6,8 @@ using Ecom.Core.Services;
 using Ecom.Core.Sharing;
 using Ecom.infrastructure.Data;
 using Ecom.infrastructure.Repositries;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Ecom.infrastructure.Repositories
 {

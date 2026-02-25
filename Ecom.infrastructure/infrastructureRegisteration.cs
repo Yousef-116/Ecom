@@ -13,7 +13,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
-using Org.BouncyCastle.Tls;
 using StackExchange.Redis;
 using System.Text;
 
@@ -27,6 +26,9 @@ namespace Ecom.infrastructure
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             //emial sender
             services.AddScoped<IEmailService, EmailService>();
+
+            //order service
+            services.AddScoped<IOrderService,OrderService>();
 
             //token generator
             services.AddScoped<IGenerateToken, GenerateToken>();
@@ -58,10 +60,12 @@ namespace Ecom.infrastructure
             services.AddAuthentication
                 (options =>
                 {
+                    //options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    //options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                    //options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-
+                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 
 
                 }).AddCookie(options =>
