@@ -3,10 +3,15 @@ using Ecom.Core.Entities;
 using Ecom.Core.Interfaces;
 using Ecom.Core.Services;
 using Ecom.Core.Sharing;
+using Ecom.infrastructure.Data;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,12 +24,14 @@ namespace Ecom.infrastructure.Repositories
         private readonly SignInManager<AppUser> signInManager;
         private readonly UserManager<AppUser> userManager;
         private readonly IGenerateToken generateToken;
-        public AuthRepository(UserManager<AppUser> userManager, IEmailService emailService, SignInManager<AppUser> signInManager, IGenerateToken generateToken)
+        private readonly AppDbContext context;
+        public AuthRepository(UserManager<AppUser> userManager, IEmailService emailService, SignInManager<AppUser> signInManager, IGenerateToken generateToken, AppDbContext context)
         {
             this.userManager = userManager;
             this.emailService = emailService;
             this.signInManager = signInManager;
             this.generateToken = generateToken;
+            this.context = context;
         }
 
         //public async Task<string> RegisterAsync(RegisterDTO registerDTO)
@@ -87,7 +94,7 @@ namespace Ecom.infrastructure.Repositories
         //}
 
         public async Task<AuthResponse> RegisterAsync(RegisterDTO registerDTO)
-        { 
+        {
             try
             {
                 if (registerDTO == null)
@@ -296,7 +303,33 @@ namespace Ecom.infrastructure.Repositories
 
         }
 
+        public async Task<bool> UpdateAddress(string email, Address newAddress)
+        {
+            var user = await context.Users
+                .Include(u => u.Address)
+                .FirstOrDefaultAsync(x => x.Email == email);
 
+            if (user == null)
+                return false;
+
+            if (user.Address == null)
+            {
+                newAddress.AppUserId = user.Id;
+                user.Address = newAddress;
+            }
+            else
+            {
+                user.Address.FirstName = newAddress.FirstName;
+                user.Address.LastName = newAddress.LastName;
+                user.Address.Street = newAddress.Street;
+                user.Address.City = newAddress.City;
+                user.Address.State = newAddress.State;
+                user.Address.ZipCode = newAddress.ZipCode;
+            }
+
+            await context.SaveChangesAsync();
+            return true;
+        }
     }
 
 }

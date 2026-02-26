@@ -12,7 +12,7 @@ namespace Ecom.infrastructure.Data
         public virtual DbSet<Category> Categories { get; set; }
         public virtual DbSet<Product> Products { get; set; }
         public virtual DbSet<Photo> Photos { get; set; }
-        public virtual DbSet<Address> AppUsers { get; set; }
+        public virtual DbSet<Address> Addresses { get; set; }
         public virtual DbSet<Orders> Orders { get; set; }
         public virtual DbSet<OrderItem> OrderItems { get; set; }
         public virtual DbSet<DeliveryMethod> DeliveryMethods { get; set; }

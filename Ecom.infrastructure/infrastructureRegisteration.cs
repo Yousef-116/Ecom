@@ -5,8 +5,11 @@ using Ecom.infrastructure.Data;
 using Ecom.infrastructure.Repositories;
 using Ecom.infrastructure.Repositories.Service;
 using Ecom.infrastructure.Repositries;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -82,13 +85,19 @@ namespace Ecom.infrastructure
                 {
                     options.RequireHttpsMetadata = false;
                     options.SaveToken = true;
+
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Token:Secret"])),
+
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(configuration["Token:Secret"])),
+
                         ValidateIssuer = true,
                         ValidIssuer = configuration["Token:Issure"],
+
                         ValidateAudience = false,
+
                         ClockSkew = TimeSpan.Zero
 
                         //ValidateLifetime = true,
@@ -106,7 +115,8 @@ namespace Ecom.infrastructure
                             return Task.CompletedTask;
                         }
                     };
-                }); 
+                });
+
 
             return services;
         }

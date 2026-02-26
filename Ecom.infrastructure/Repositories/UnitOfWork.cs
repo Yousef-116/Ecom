@@ -52,7 +52,7 @@ namespace Ecom.infrastructure.Repositories
             CategoryRepository = new CategoryRepository(_context);
             PhotoRepository = new PhotoRepository(_context);
             CustomerBasketRepository = new CustomerBasketRepository(_redis);
-            Auth = new AuthRepository(_userManager, _emailService, _signInManager,_generateToken);
+            Auth = new AuthRepository(_userManager, _emailService, _signInManager,_generateToken, _context);
         }
     }
 }

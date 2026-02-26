@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
 using Ecom.Core.DTO;
+using Ecom.Core.Entities;
 using Ecom.Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Ecom.API.Controllers
 {
@@ -23,6 +26,33 @@ namespace Ecom.API.Controllers
 
         }
 
+        [Authorize]
+        [HttpPut("update-address")]
+        public async Task<IActionResult> UpdateOrCreateAddress(ShippingAddressDTO shippingAddressDTO)
+        {
+            if (!User.Identity.IsAuthenticated)
+                return Unauthorized("User not authenticated");
+
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+
+            if (email == null)
+                return BadRequest("Email claim missing");
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var address = mapper.Map<Address>(shippingAddressDTO);
+
+            var result = await unitOfWork.Auth.UpdateAddress(email, address);
+
+            if (result)
+                return Ok(new { message = "Address Update Successfully" });
+
+
+            return BadRequest("Failed to update address");
+        }
+
+
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDTO loginDto)
         {
@@ -32,17 +62,24 @@ namespace Ecom.API.Controllers
                 return BadRequest("Invalid UserName Or Password");
             }
 
-            Response.Cookies.Append("token", result.Token, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                Domain = "localhost", // Adjust this to your domain
+            //Response.Cookies.Append("token", result.Token, new CookieOptions
+            //{
+            //    //HttpOnly = true,
+            //    Secure = true,
+            //    Domain = "localhost", // Adjust this to your domain
 
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTimeOffset.UtcNow.AddDays(1)
+            //    SameSite = SameSiteMode.None,
+            //    Expires = DateTimeOffset.UtcNow.AddDays(3)
+            //});
+
+            //return Ok(result.Message);
+            return Ok(new
+            {
+                message = result.Message,
+                token = result.Token
             });
 
-            return Ok(result.Message);
+
         }
 
         [HttpPost("active-account")]
