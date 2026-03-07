@@ -102,5 +102,18 @@ namespace Ecom.infrastructure.Repositories.Service
 
             return result;
         }
+        public async Task<Orders?> UpdateOrderAsync(int orderId, Status status)
+        {
+            var order = await context.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
+
+            if (order == null)
+                return null;
+
+            order.status = status;
+
+            await context.SaveChangesAsync();
+
+            return order;
+        }
     }
 }

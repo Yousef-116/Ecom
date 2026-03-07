@@ -59,5 +59,19 @@ namespace Ecom.API.Controllers
         [HttpGet("delivery-methods")]
         public async Task<IActionResult> GetDeliveryMethods()
             => Ok(await _orderService.GetDeliveryMethodsAsync());
+
+
+        [HttpPut("update-status/{orderId}")]
+        public async Task<IActionResult> UpdateOrderStatus(int orderId, [FromBody] UpdateOrderStatusDto dto)
+        {
+            var order = await _orderService.UpdateOrderAsync(orderId, dto.Status);
+
+            if (order == null)
+                return NotFound();
+
+            return Ok(order);
+        }
     }
+
+
 }

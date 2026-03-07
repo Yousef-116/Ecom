@@ -25,4 +25,8 @@ namespace Ecom.Core.DTO
         public string State { get; set; }
         public string ZipCode { get; set; }
     }
+    public class UpdateOrderStatusDto
+    {
+        public Status Status { get; set; }
+    }
 }
