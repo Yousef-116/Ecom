@@ -36,6 +36,9 @@ namespace Ecom.infrastructure
             //token generator
             services.AddScoped<IGenerateToken, GenerateToken>();
 
+            //Add Payment Service
+            services.AddScoped<IPaymentService, PaymentService>();
+
             //apply redis
             services.AddSingleton<IConnectionMultiplexer>(i =>
             {

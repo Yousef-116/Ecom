@@ -218,7 +218,7 @@ namespace Ecom.infrastructure.Repositories
             {
                 return AuthResponse.Fail(ex.InnerException?.Message ?? ex.Message);
             }
-        }
+        } 
 
         public async Task SendEmail(string email, string Code, string component, string subject, string message)
         {
@@ -329,6 +329,18 @@ namespace Ecom.infrastructure.Repositories
 
             await context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<Address> GetAddressAsync(string email)
+        {
+            //throw new NotImplementedException();
+            var user = await context.Users
+               .Include(u => u.Address)
+               .FirstOrDefaultAsync(x => x.Email == email);
+
+            return user.Address;
+
+
         }
     }
 

@@ -14,11 +14,13 @@ namespace Ecom.infrastructure.Repositories.Service
         private readonly IUnitOfWork unitOfWork;
         private readonly AppDbContext context;
         private readonly IMapper mapper;
-        public OrderService(IUnitOfWork unitOfWork, AppDbContext context, IMapper mapper)
+        private readonly IPaymentService paymentService;
+        public OrderService(IUnitOfWork unitOfWork, AppDbContext context, IMapper mapper, IPaymentService paymentService)
         {
             this.unitOfWork = unitOfWork;
             this.context = context;
             this.mapper = mapper;
+            this.paymentService = paymentService;
         }
 
         public async Task<Orders> CreateOrderAsync(AddOrderDTO orderDTO, string BuyerEmail)
@@ -44,12 +46,21 @@ namespace Ecom.infrastructure.Repositories.Service
 
             var shipping = mapper.Map<ShippingAddress>(orderDTO.ShippingAddress);
 
+            var ExisitOrder = await context.Orders.Where(o => o.PaymentIntentId == basket.PaymentIntentId).FirstOrDefaultAsync();
+
+            if (ExisitOrder != null)
+            {
+                context.Orders.Remove(ExisitOrder);
+                await paymentService.CreateOrUpdatePaymentAsync(basket.id, deliverMethod.Id);
+            }
+
             var order = new Orders(
                buyerEmail: BuyerEmail,
                subTotal: subTotal,
                deliveryMethod: deliverMethod,
                orderItems: orderItems,
-               shippingAddress: shipping
+               shippingAddress: shipping,
+               paymentIntentId: basket.PaymentIntentId
                );
 
             await context.AddAsync( order );

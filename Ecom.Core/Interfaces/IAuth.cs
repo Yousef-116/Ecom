@@ -19,7 +19,9 @@ namespace Ecom.Core.Interfaces
         Task<AuthResponse> ResetPasswordAsync(ResetPasswordDTO resetPasswordDTO);
         Task<bool> ActiveAccountAsync(ActiveAccountDTO activeAccount);
 
+        // ---------------ADDRESS
         Task<bool> UpdateAddress(string email ,  Address address);
+        Task<Address> GetAddressAsync(string email);
 
 
     }

@@ -5,6 +5,7 @@ using Ecom.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Ecom.API.Controllers
 {
@@ -23,6 +24,25 @@ namespace Ecom.API.Controllers
                 return Ok(result.Message);
             }
             return BadRequest(result.Message);
+
+        }
+
+        [HttpGet("GetAddress")]
+        public async Task<IActionResult> GetAddress()
+        {
+            if (!User.Identity.IsAuthenticated)
+                return Unauthorized("User not authenticated");
+
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+
+            if (email == null)
+                return BadRequest("Email claim missing");
+
+            var address = await unitOfWork.Auth.GetAddressAsync(email);
+
+            var shippingAddressDTO = mapper.Map<ShippingAddressDTO>(address);
+
+            return Ok(shippingAddressDTO);
 
         }
 
@@ -62,6 +82,14 @@ namespace Ecom.API.Controllers
                 return BadRequest("Invalid UserName Or Password");
             }
 
+            return Ok(new
+            {
+                message = result.Message,
+                token = result.Token
+            });
+
+
+        }
             //Response.Cookies.Append("token", result.Token, new CookieOptions
             //{
             //    //HttpOnly = true,
@@ -73,14 +101,6 @@ namespace Ecom.API.Controllers
             //});
 
             //return Ok(result.Message);
-            return Ok(new
-            {
-                message = result.Message,
-                token = result.Token
-            });
-
-
-        }
 
         [HttpPost("active-account")]
         public async Task<IActionResult> ActiveAccount(ActiveAccountDTO activeAccount)
