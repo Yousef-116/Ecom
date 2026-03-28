@@ -13,7 +13,7 @@ namespace Ecom.Core.Entities.Order
         public string State { get; set; }
         public ShippingAddress()
         {
-            
+
         }
         public ShippingAddress(string firstName, string lastName, string street, string city, string state, string zipCode)
         {

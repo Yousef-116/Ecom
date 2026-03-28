@@ -90,19 +90,20 @@ namespace Ecom.API.Controllers
 
 
         }
-            //Response.Cookies.Append("token", result.Token, new CookieOptions
-            //{
-            //    //HttpOnly = true,
-            //    Secure = true,
-            //    Domain = "localhost", // Adjust this to your domain
+        //Response.Cookies.Append("token", result.Token, new CookieOptions
+        //{
+        //    //HttpOnly = true,
+        //    Secure = true,
+        //    Domain = "localhost", // Adjust this to your domain
 
-            //    SameSite = SameSiteMode.None,
-            //    Expires = DateTimeOffset.UtcNow.AddDays(3)
-            //});
+        //    SameSite = SameSiteMode.None,
+        //    Expires = DateTimeOffset.UtcNow.AddDays(3)
+        //});
 
-            //return Ok(result.Message);
+        //return Ok(result.Message);
 
         [HttpPost("active-account")]
+        [AllowAnonymous]
         public async Task<IActionResult> ActiveAccount(ActiveAccountDTO activeAccount)
         {
             var result = await unitOfWork.Auth.ActiveAccountAsync(activeAccount);
@@ -110,8 +111,10 @@ namespace Ecom.API.Controllers
             {
                 return Ok("Account Activated Successfully");
             }
-            return BadRequest("Invalid Activation Code");
+            // Return a more helpful message
+            return BadRequest("Activation failed. A new activation link has been sent to your email.");
         }
+
         [HttpGet("send-email-forget-password")]
         public async Task<IActionResult> SendEmailForForgetPassword(string email)
         {

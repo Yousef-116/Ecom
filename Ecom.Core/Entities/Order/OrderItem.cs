@@ -6,7 +6,7 @@ namespace Ecom.Core.Entities.Order
     {
         public OrderItem()
         {
-            
+
         }
         public OrderItem(decimal price, int quantity, int productItemId, string productName, string mainImage)
         {

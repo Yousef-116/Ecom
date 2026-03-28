@@ -10,26 +10,26 @@ namespace Ecom.infrastructure.Data.Config
         {
             builder.Property(m => m.Price).HasColumnType("decimal(18,2)");
 
-            builder.HasData(
-                new DeliveryMethod
-                {
-                    Id = 1,
-                    DeleveryTime = "One week",
-                    Description = "The fastest ",
-                    Name = "Name",
-                    Price = 54
+            //builder.HasData(
+            //    new DeliveryMethod
+            //    {
+            //        Id = 1,
+            //        DeleveryTime = "One week",
+            //        Description = "The fastest ",
+            //        Name = "Name",
+            //        Price = 54
 
-                },
-                new DeliveryMethod
-                {
-                     Id = 2,
-                     DeleveryTime = "Two week",
-                     Description = "more Econmomic delivery",
-                     Name = "BaridMAsr",
-                     Price = 20
+            //    },
+            //    new DeliveryMethod
+            //    {
+            //         Id = 2,
+            //         DeleveryTime = "Two week",
+            //         Description = "more Econmomic delivery",
+            //         Name = "BaridMAsr",
+            //         Price = 20
 
-                }
-            );
+            //    }
+            //);
         }
     }
 }

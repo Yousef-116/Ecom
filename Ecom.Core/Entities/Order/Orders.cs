@@ -7,7 +7,7 @@ namespace Ecom.Core.Entities.Order
     {
         public Orders()
         {
-            
+
         }
         public Orders(string buyerEmail, decimal subTotal, ShippingAddress shippingAddress, DeliveryMethod deliveryMethod, IReadOnlyList<OrderItem> orderItems, string paymentIntentId = null)
         {

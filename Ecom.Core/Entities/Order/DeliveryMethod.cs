@@ -11,7 +11,7 @@ namespace Ecom.Core.Entities.Order
 
         public DeliveryMethod()
         {
-            
+
         }
         public DeliveryMethod(string name, decimal price, string description, string deleveryTime)
         {
