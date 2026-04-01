@@ -21,26 +21,34 @@ namespace Ecom.API.Controllers
         [HttpPost("create-order")]
         public async Task<IActionResult> Create(AddOrderDTO orderDTO)
         {
+            try
+            {
+            
             var email = User.FindFirstValue(ClaimTypes.Email);
             if (string.IsNullOrEmpty(email))
                 return Unauthorized();
 
             var order = await _orderService.CreateOrderAsync(orderDTO, email);
             return Ok(order);
+            }
+            catch (Exception ex)
+            {
+                System.Console.WriteLine("------------------");
+                System.Console.WriteLine(ex.Message);
+                return BadRequest(ex.Message); 
+            }
         }
 
-        [HttpGet("GetOrdersForUser")]
-        public async Task<IActionResult> GetOrdersForUser()
+
+        [HttpGet("get-orders-for-user")]
+        public async Task<ActionResult<IReadOnlyList<OrderToReturnDTO>>> getorders()
         {
-            var email = User.FindFirstValue(ClaimTypes.Email);
-            if (string.IsNullOrEmpty(email))
-                return Unauthorized();
-
-            var orders = await _orderService.GetAllOrdersforUserAsync(email);
-            return Ok(orders);
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            var order = await _orderService.GetAllOrdersforUserAsync(email);
+            return Ok(order);
         }
 
-        [HttpGet("GetOrderById/{id}")]
+        [HttpGet("get-order-by-id/{id}")]
         public async Task<IActionResult> GetOrderById(int id)
         {
             var email = User.FindFirstValue(ClaimTypes.Email);

@@ -10,9 +10,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace Ecom.API.Controllers
 {
 
-    public class ProductController : BaseController
+    public class ProductsController : BaseController
     {
-        public ProductController(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
+        public ProductsController(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
         {
         }
 

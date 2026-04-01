@@ -13,7 +13,7 @@ namespace Ecom.Core.Interfaces
     {
 
         Task<AuthResponse> RegisterAsync(RegisterDTO registerDTO);
-        Task<AuthResponse> LoginAsync(LoginDTO loginDTO);
+        Task<string> LoginAsync(LoginDTO login);
         Task SendEmail(string email, string Code, string component, string subject, string message);
         Task<bool> SendEmialForForgetPasswordAsync(string email);
         Task<AuthResponse> ResetPasswordAsync(ResetPasswordDTO resetPasswordDTO);

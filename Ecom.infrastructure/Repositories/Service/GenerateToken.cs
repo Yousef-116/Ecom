@@ -23,24 +23,32 @@ namespace Ecom.infrastructure.Repositories.Service
 
         public string GetAndGenerateToken(AppUser user)
         {
+            Console.WriteLine(Configuration["Token:Issuer"]);
+
             List<Claim> claims = new List<Claim>()
-            {
-                new Claim(ClaimTypes.Name,user.UserName),
-                new Claim(ClaimTypes.Email,user.Email)
-            };
+    {
+        new Claim(ClaimTypes.Name, user.UserName),
+        new Claim(ClaimTypes.Email, user.Email)
+    };
+
             SecurityTokenDescriptor token = new()
             {
                 Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.UtcNow.AddDays(2),
-                Issuer = Configuration["Token:Issure"],
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["Token:Secret"])), SecurityAlgorithms.HmacSha256Signature),
+                Issuer = Configuration["Token:Issuer"],
+                Audience = Configuration["Token:Audience"], 
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(Configuration["Token:Secret"])
+                    ),
+                    SecurityAlgorithms.HmacSha256Signature
+                ),
                 NotBefore = DateTime.UtcNow
             };
 
             JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
             var securityToken = handler.CreateToken(token);
             return handler.WriteToken(securityToken);
-
         }
     }
 }

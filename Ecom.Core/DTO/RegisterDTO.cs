@@ -25,8 +25,8 @@ namespace Ecom.Core.DTO
 
     public record ActiveAccountDTO
     {
-        public string? Email { get; set; }
-        public string? Token { get; set; }
+        public string email { get; set; } = default!;
+        public string token { get; set; } = default!;
     }
 }
 

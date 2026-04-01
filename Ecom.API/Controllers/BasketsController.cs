@@ -11,7 +11,7 @@ namespace Ecom.API.Controllers
         {
         }
 
-        [HttpGet("get_basket")]
+        [HttpGet("get-basket/{id}")]
         public async Task<ActionResult> GetBasket(string id)
         {
             var basket = await unitOfWork.CustomerBasketRepository.GetCustomerBasketAsync(id);
@@ -23,7 +23,7 @@ namespace Ecom.API.Controllers
 
 
         }
-        [HttpPost("update_basket")]
+        [HttpPost("update-basket")]
         public async Task<ActionResult> UpdateBasket([FromBody] CustomerBasket basket)
         {
             var updatedBasket = await unitOfWork.CustomerBasketRepository.UpdateCustomerBasketAsync(basket);
@@ -35,7 +35,7 @@ namespace Ecom.API.Controllers
 
 
         }
-        [HttpDelete("delete_basket/{id}")]
+        [HttpDelete("delete-basket/{id}")]
         public async Task<ActionResult> DeleteBasket(string id)
         {
             var result = await unitOfWork.CustomerBasketRepository.DeleteCustomerBasketAsync(id);

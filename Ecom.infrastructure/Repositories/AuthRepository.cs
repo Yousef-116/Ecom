@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
@@ -34,64 +35,6 @@ namespace Ecom.infrastructure.Repositories
             this.context = context;
         }
 
-        //public async Task<string> RegisterAsync(RegisterDTO registerDTO)
-        //{
-        //    if (registerDTO == null)
-        //    {
-        //        return null;
-        //    }
-        //    if (await userManager.FindByNameAsync(registerDTO.UserName) != null)
-        //    {
-        //        return "This UserName is Already Registerd";
-        //    }
-        //    if (await userManager.FindByEmailAsync(registerDTO.Email) != null)
-        //    {
-        //        return "This Email is Already Registerd";
-        //    }
-
-        //    AppUser user = new AppUser
-        //    {
-        //        UserName = registerDTO.UserName,
-        //        Email = registerDTO.Email,
-        //        DisplayName = registerDTO.UserName,
-        //        Address = new Address
-        //        {
-        //            FirstName = "N/A",
-        //            LastName = "N/A",
-        //            Street = "N/A",
-        //            City = "N/A",
-        //            State = "N/A",        // 🔥 THIS was missing
-        //            ZipCode = "00000"
-        //        }
-        //    };
-
-        //    try
-        //    {
-
-
-        //    var result = await userManager.CreateAsync(user, registerDTO.Password);
-
-        //    if (!result.Succeeded)
-        //    {
-        //        return result.Errors.ToList()[0].Description;
-        //    }
-
-        //    // Send Active Email
-
-        //    string token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-        //    await SendEmail(user.Email, token, "active", "Active Your Account", "Please Click The Link Below To Active Your Account");
-        //    }
-        //    catch(Exception ex)
-        //    {
-        //        Console.WriteLine(ex.Message);
-        //    }
-
-
-        //    return "Done";
-
-
-
-        //}
 
         public async Task<AuthResponse> RegisterAsync(RegisterDTO registerDTO)
         {
@@ -131,10 +74,11 @@ namespace Ecom.infrastructure.Repositories
                 }
 
                 var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+                var encodedToken = WebUtility.UrlEncode(token);
 
                 await SendEmail(
                     user.Email,
-                    token,
+                    encodedToken,
                     "active",
                     "Activate Your Account",
                     "Please click the link below to activate your account"
@@ -148,77 +92,34 @@ namespace Ecom.infrastructure.Repositories
             }
         }
 
-        //public async Task<string> LoginAsync(LoginDTO loginDTO)
-        //{
-        //    if (loginDTO == null)
-        //    {
-        //        return null;
-        //    }
 
-        //    var user = await userManager.FindByEmailAsync(loginDTO.Email);
-        //    if (user == null)
-        //    {
-        //        return "Invalid UserName";
-        //    }
-        //    if (user.EmailConfirmed == false)
-        //    {
-        //        //return "Please Active Your Account First";
-        //        string token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-        //        await SendEmail(user.Email, token, "active", "Active Your Account", "Please Click The Link Below To Active Your Account");
-        //        return "Please Active Your Account First, We Have Send You An Email To Active Your Account";
-        //    }
-
-        //    var result = await signInManager.CheckPasswordSignInAsync(user, loginDTO.Password, true);
-        //    if (!result.Succeeded)
-        //    {
-        //        return "Invalid Password , please check your Email and password";
-        //    }
-
-        //    return generateToken.GetAndGenerateToken(user);
-
-        //}
-
-        public async Task<AuthResponse> LoginAsync(LoginDTO loginDTO)
+        public async Task<string> LoginAsync(LoginDTO login)
         {
-            try
+
+            if (login == null)
             {
-                if (loginDTO == null)
-                    return AuthResponse.Fail("Invalid request");
-
-                var user = await userManager.FindByEmailAsync(loginDTO.Email);
-
-                if (user == null)
-                    return AuthResponse.Fail("Invalid credentials");
-
-                if (!user.EmailConfirmed)
-                {
-                    var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-
-                    await SendEmail(
-                        user.Email,
-                        token,
-                        "active",
-                        "Activate Your Account",
-                        "Please click the link below to activate your account"
-                    );
-
-                    return AuthResponse.Fail("Please confirm your email first. Activation email sent.");
-                }
-
-                var result = await signInManager.CheckPasswordSignInAsync(user, loginDTO.Password, true);
-
-                if (!result.Succeeded)
-                    return AuthResponse.Fail("Invalid credentials");
-
-                var jwtToken = generateToken.GetAndGenerateToken(user);
-
-                return AuthResponse.Ok("Login successful", jwtToken);
+                return null;
             }
-            catch (Exception ex)
+            var finduser = await userManager.FindByEmailAsync(login.Email);
+
+            if (!finduser.EmailConfirmed)
             {
-                return AuthResponse.Fail(ex.InnerException?.Message ?? ex.Message);
+                string token = await userManager.GenerateEmailConfirmationTokenAsync(finduser);
+
+                await SendEmail(finduser.Email, token, "active", "ActiveEmail", "Please active your email, click on button to active");
+
+                return "Please confirem your email first, we have send activat to your E-mail";
             }
-        } 
+
+            var result = await signInManager.CheckPasswordSignInAsync(finduser, login.Password, true);
+
+            if (result.Succeeded)
+            {
+                return generateToken.GetAndGenerateToken(finduser);
+            }
+
+            return "please check your email and password, something went wrong";
+        }
 
         public async Task SendEmail(string email, string Code, string component, string subject, string message)
         {
@@ -287,20 +188,25 @@ namespace Ecom.infrastructure.Repositories
 
         public async Task<bool> ActiveAccountAsync(ActiveAccountDTO activeAccount)
         {
-            var user = await userManager.FindByEmailAsync(activeAccount.Email);
+            var user = await userManager.FindByEmailAsync(activeAccount.email);
             if (user == null)
             {
                 return false;
             }
-            var result = await userManager.ConfirmEmailAsync(user, activeAccount.Token);
+
+            var result = await userManager.ConfirmEmailAsync(user, activeAccount.token);
+
             if (!result.Succeeded)
             {
+                
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                Console.WriteLine($"Confirmation failed: {errors}");
+
                 var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
                 await SendEmail(user.Email, token, "active", "Active Your Account", "Please Click The Link Below To Active Your Account");
                 return false;
             }
             return true;
-
         }
 
         public async Task<bool> UpdateAddress(string email, Address newAddress)

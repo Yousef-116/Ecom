@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Ecom.API.Helper;
 using Ecom.Core.DTO;
 using Ecom.Core.Entities;
 using Ecom.Core.Interfaces;
@@ -15,7 +16,7 @@ namespace Ecom.API.Controllers
         {
         }
 
-        [HttpPost("register")]
+        [HttpPost("Register")]
         public async Task<IActionResult> Register(RegisterDTO registerDto)
         {
             var result = await unitOfWork.Auth.RegisterAsync(registerDto);
@@ -27,114 +28,108 @@ namespace Ecom.API.Controllers
 
         }
 
-        [HttpGet("GetAddress")]
-        public async Task<IActionResult> GetAddress()
+        [HttpGet("get-address-for-user")]
+        public async Task<IActionResult> getAddress()
         {
-            if (!User.Identity.IsAuthenticated)
-                return Unauthorized("User not authenticated");
+            var address = await unitOfWork.Auth.GetAddressAsync(User.FindFirst(ClaimTypes.Email).Value);
+            var result = mapper.Map<ShippingAddressDTO>(address);
+            return Ok(result);
+        }
 
-            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+        [HttpGet("Logout")]
+        public void logout()
+        {
 
-            if (email == null)
-                return BadRequest("Email claim missing");
-
-            var address = await unitOfWork.Auth.GetAddressAsync(email);
-
-            var shippingAddressDTO = mapper.Map<ShippingAddressDTO>(address);
-
-            return Ok(shippingAddressDTO);
-
+            Response.Cookies.Append("token", "", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                IsEssential = true,
+                Domain = "localhost",
+                Expires = DateTime.Now.AddDays(-1)
+            });
         }
 
         [Authorize]
+        [HttpGet("get-user-name")]
+        public IActionResult GetUserName()
+        {
+            return Ok(new ResponseAPI(200, User.Identity.Name));
+        }
+
+        [HttpGet("IsUserAuth")]
+        public async Task<IActionResult> IsUserAuth()
+        {
+
+            return User.Identity.IsAuthenticated ? Ok() : BadRequest();
+        }
+
+
+        [Authorize]
         [HttpPut("update-address")]
-        public async Task<IActionResult> UpdateOrCreateAddress(ShippingAddressDTO shippingAddressDTO)
+        public async Task<IActionResult> updateAddress(ShippingAddressDTO addressDTO)
         {
-            if (!User.Identity.IsAuthenticated)
-                return Unauthorized("User not authenticated");
-
             var email = User.FindFirst(ClaimTypes.Email)?.Value;
-
-            if (email == null)
-                return BadRequest("Email claim missing");
-
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var address = mapper.Map<Address>(shippingAddressDTO);
-
+            var address = mapper.Map<Address>(addressDTO);
             var result = await unitOfWork.Auth.UpdateAddress(email, address);
-
-            if (result)
-                return Ok(new { message = "Address Update Successfully" });
-
-
-            return BadRequest("Failed to update address");
+            return result ? Ok() : BadRequest();
         }
 
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDTO loginDto)
+        [HttpPost("Login")]
+        public async Task<IActionResult> login(LoginDTO loginDTO)
         {
-            var result = await unitOfWork.Auth.LoginAsync(loginDto);
-            if (result.Success == false)
+
+           
+            string result = await unitOfWork.Auth.LoginAsync(loginDTO);
+            if (result.StartsWith("please"))
             {
-                return BadRequest("Invalid UserName Or Password");
+                return BadRequest(new ResponseAPI(400, result));
             }
 
-            return Ok(new
+            Response.Cookies.Append("token", result, new CookieOptions
             {
-                message = result.Message,
-                token = result.Token
+                HttpOnly = true,
+                Secure = true,                    
+                SameSite = SameSiteMode.None,    
+                IsEssential = true,
+                Expires = DateTime.UtcNow.AddDays(1)
             });
-
-
+            return Ok(new ResponseAPI(200,"login successfully"));
         }
-        //Response.Cookies.Append("token", result.Token, new CookieOptions
-        //{
-        //    //HttpOnly = true,
-        //    Secure = true,
-        //    Domain = "localhost", // Adjust this to your domain
 
-        //    SameSite = SameSiteMode.None,
-        //    Expires = DateTimeOffset.UtcNow.AddDays(3)
-        //});
 
-        //return Ok(result.Message);
-
+      
         [HttpPost("active-account")]
-        [AllowAnonymous]
-        public async Task<IActionResult> ActiveAccount(ActiveAccountDTO activeAccount)
+        public async Task<ActionResult> active([FromBody] ActiveAccountDTO accountDTO)
         {
-            var result = await unitOfWork.Auth.ActiveAccountAsync(activeAccount);
-            if (result)
-            {
-                return Ok("Account Activated Successfully");
-            }
-            // Return a more helpful message
-            return BadRequest("Activation failed. A new activation link has been sent to your email.");
+           
+            var result = await unitOfWork.Auth.ActiveAccountAsync(accountDTO);
+
+            return result
+                ? Ok("Activated successfully")
+                : BadRequest("Activation failed");
         }
+
 
         [HttpGet("send-email-forget-password")]
-        public async Task<IActionResult> SendEmailForForgetPassword(string email)
+        public async Task<IActionResult> forget(string email)
         {
             var result = await unitOfWork.Auth.SendEmialForForgetPasswordAsync(email);
-            if (result)
-            {
-                return Ok("Email Sent Successfully");
-            }
-            return BadRequest("Failed to Send Email");
+            return result ? Ok(new ResponseAPI(200, "Email send successfully")) : BadRequest(new ResponseAPI(200, "email Not Activvvvvvvvvv"));
         }
 
+
         [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword(ResetPasswordDTO resetPasswordDto)
+        public async Task<IActionResult> reset(ResetPasswordDTO restPasswordDTO)
         {
-            var result = await unitOfWork.Auth.ResetPasswordAsync(resetPasswordDto);
+            var result = await unitOfWork.Auth.ResetPasswordAsync(restPasswordDTO);
             if (result.Success)
             {
-                return Ok($"Password Reset Successfully {result.Message}");
+                return Ok(new ResponseAPI(200, "login successfully"));
             }
-            return BadRequest($"Failed to Reset Password{result.Message}");
+            return BadRequest(new ResponseAPI(400, "Nottttttt reset Password "));
         }
     }
 }
