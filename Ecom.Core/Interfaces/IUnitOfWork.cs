@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +12,7 @@ namespace Ecom.Core.Interfaces
         public ICategoryRepository CategoryRepository { get; }
         public IPhotoRepository PhotoRepository { get; }
         public ICustomerBasketRepository CustomerBasketRepository { get; }
+        public IProductRatingRepository ProductRatingRepository { get; }
 
         public IAuth Auth { get; }
 

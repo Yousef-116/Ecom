@@ -11,18 +11,17 @@ namespace Ecom.API.Controllers
         {
         }
 
-        [HttpGet("get-basket/{id}")]
-        public async Task<ActionResult> GetBasket(string id)
+        [HttpGet("get-basket")]
+        public async Task<ActionResult> GetBasket([FromQuery] string id)
         {
             var basket = await unitOfWork.CustomerBasketRepository.GetCustomerBasketAsync(id);
             if (basket == null)
             {
-                return Ok(new CustomerBasket(id)); // Return an empty basket if not found
+                return Ok(new CustomerBasket(id)); // Return empty basket
             }
             return Ok(basket);
-
-
         }
+
         [HttpPost("update-basket")]
         public async Task<ActionResult> UpdateBasket([FromBody] CustomerBasket basket)
         {

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Ecom.Core.Entities;
 using Ecom.Core.Interfaces;
 using Ecom.Core.Services;
@@ -33,6 +33,8 @@ namespace Ecom.infrastructure.Repositories
 
         public ICustomerBasketRepository CustomerBasketRepository { get; }
 
+        public IProductRatingRepository ProductRatingRepository { get; }
+
         public IAuth Auth { get; }
 
         private readonly IConnectionMultiplexer _redis;
@@ -52,6 +54,7 @@ namespace Ecom.infrastructure.Repositories
             CategoryRepository = new CategoryRepository(_context);
             PhotoRepository = new PhotoRepository(_context);
             CustomerBasketRepository = new CustomerBasketRepository(_redis);
+            ProductRatingRepository = new ProductRatingRepository(_context);
             Auth = new AuthRepository(_userManager, _emailService, _signInManager,_generateToken, _context);
         }
     }

@@ -29,10 +29,17 @@ namespace Ecom.API.Controllers
         }
 
         [HttpGet("get-address-for-user")]
-        public async Task<IActionResult> getAddress()
+        public async Task<IActionResult> GetAddress()
         {
-            var address = await unitOfWork.Auth.GetAddressAsync(User.FindFirst(ClaimTypes.Email).Value);
+            var emailClaim = User.FindFirst(ClaimTypes.Email);
+
+            if (emailClaim == null)
+                return Unauthorized();
+
+            var address = await unitOfWork.Auth.GetAddressAsync(emailClaim.Value);
+
             var result = mapper.Map<ShippingAddressDTO>(address);
+
             return Ok(result);
         }
 
@@ -55,14 +62,20 @@ namespace Ecom.API.Controllers
         [HttpGet("get-user-name")]
         public IActionResult GetUserName()
         {
-            return Ok(new ResponseAPI(200, User.Identity.Name));
+            var userName = User.Identity.Name;
+            return Ok(new
+            {
+                statusCode = 200,
+                message = userName,
+                data = userName,      // Add this
+                userName = userName    // Add this
+            });
         }
 
         [HttpGet("IsUserAuth")]
         public async Task<IActionResult> IsUserAuth()
         {
-
-            return User.Identity.IsAuthenticated ? Ok() : BadRequest();
+            return User.Identity.IsAuthenticated ? Ok() : Unauthorized();
         }
 
 

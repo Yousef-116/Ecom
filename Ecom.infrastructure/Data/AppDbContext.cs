@@ -1,4 +1,4 @@
-﻿using Ecom.Core.Entites.Product;
+using Ecom.Core.Entites.Product;
 using Ecom.Core.Entities;
 using Ecom.Core.Entities.Order;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -16,6 +16,7 @@ namespace Ecom.infrastructure.Data
         public virtual DbSet<Orders> Orders { get; set; }
         public virtual DbSet<OrderItem> OrderItems { get; set; }
         public virtual DbSet<DeliveryMethod> DeliveryMethods { get; set; }
+        public virtual DbSet<ProductRating> ProductRatings { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
