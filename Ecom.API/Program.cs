@@ -1,11 +1,12 @@
 using Ecom.API.Middleware;
 using Ecom.infrastructure;
+using Ecom.infrastructure.Data;
 
 namespace Ecom.API
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +18,7 @@ namespace Ecom.API
             // Swagger setup
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            builder.Services.AddAutoMapper(cfg => cfg.AddMaps(AppDomain.CurrentDomain.GetAssemblies()));
 
             // CORS configuration
             builder.Services.AddCors(options =>
@@ -35,6 +36,12 @@ namespace Ecom.API
 
 
             var app = builder.Build();
+
+            // Seed test data in development
+            if (app.Environment.IsDevelopment())
+            {
+                await DataSeeder.SeedAsync(app.Services);
+            }
 
 
             if (app.Environment.IsDevelopment())

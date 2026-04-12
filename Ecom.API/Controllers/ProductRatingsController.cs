@@ -2,6 +2,7 @@ using AutoMapper;
 using Ecom.Core.DTO;
 using Ecom.Core.Entites.Product;
 using Ecom.Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Ecom.API.Controllers
@@ -55,6 +56,7 @@ namespace Ecom.API.Controllers
         }
 
         [HttpPost("add-rating")]
+        [Authorize]
         public async Task<IActionResult> AddRating([FromBody] AddProductRatingDTO ratingDto)
         {
             if (!ModelState.IsValid)
