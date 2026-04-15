@@ -6,130 +6,80 @@ using Ecom.Core.Interfaces;
 using Ecom.Core.Sharing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace Ecom.API.Controllers
 {
-
     public class ProductsController : BaseController
     {
         public ProductsController(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
         {
         }
 
-        [HttpGet("get-all")]
+        [HttpGet]
+        [OutputCache(Duration = 600)]
         public async Task<IActionResult> Get([FromQuery] ProductParams productParams)
         {
-            var products = await unitOfWork.ProductRepository
-                .GetAllAsync(productParams);
-            //int TotalCount = await unitOfWork.ProductRepository.GetCountAsync();
+            var products = await unitOfWork.ProductRepository.GetAllAsync(productParams);
+
             return Ok(new Pagination<ProductDTO>(
-                    productParams.PageNumber,
-                    productParams.PageSize,
-                    products.TotalCount,
-                    products.Products));
-            // return products.Any()
-            // ? Ok(new Pagination<ProductDTO>(
-            //     productParams.PageNumber, 
-            //     productParams.PageSize,
-            //     TotalCount,
-            //     products))
-            // : NotFound("No products found.");
+                productParams.PageNumber,
+                productParams.PageSize,
+                products.TotalCount,
+                products.Products));
         }
 
-
-
-        [HttpGet("get-by-id/{id}")]
-        public async Task<IActionResult> getById(int id)
+        [HttpGet("{id}")]
+        [OutputCache(Duration = 600)]
+        public async Task<IActionResult> GetById(int id)
         {
-            try
+            var product = await unitOfWork.ProductRepository.GetByIdAsync(id, x => x.Category, x => x.Photos);
+
+            if (product == null)
             {
-                var product = await unitOfWork.ProductRepository
-                .GetByIdAsync(id, x => x.Category, x => x.Photos);
-                var result = mapper.Map<ProductDTO>(product);
-                if (result == null)
-                {
-                    return NotFound($"Product with ID {id} not found.");
-                }
-                else
-                {
-                    return Ok(result);
-                }
+                return NotFound(new { Message = $"Product with ID {id} not found." });
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred while retrieving the product: {ex.Message}");
-            }
+
+            var result = mapper.Map<ProductDTO>(product);
+            return Ok(result);
         }
 
-        [HttpPost("Add-product")]
-        public async Task<IActionResult> addProduct(AddProductDTO productDTO)
+        [HttpPost]
+        public async Task<IActionResult> AddProduct(AddProductDTO productDTO)
         {
-            try
+            if (productDTO == null)
             {
-                if (productDTO == null)
-                {
-                    return BadRequest("Product is Null");
-                }
-
-                //var newProduct = mapper.Map<Product>(product);
-
-                await unitOfWork.ProductRepository.AddAsync(productDTO);
-
-                return Ok("Product add successfully.");
-
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred while adding the product: {ex.Message}");
+                return BadRequest(new { Message = "Product data is null." });
             }
 
+            await unitOfWork.ProductRepository.AddAsync(productDTO);
+            return Ok(new { Message = "Product added successfully." });
         }
 
-        [HttpPut("Update-Product/{id}")]
-        //[Consumes("multipart/form-data")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProduct(int id, [FromForm] UpdateProductDTO productDTO)
         {
-            try
+            if (productDTO == null)
             {
-                if (productDTO == null)
-                {
-                    return BadRequest("Product data is null.");
-                }
-
-                await unitOfWork.ProductRepository.UpdateAsync(id, productDTO);
-
-                return Ok("Product updated successfully.");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred while updating the Product: {ex.Message}");
+                return BadRequest(new { Message = "Product data is null." });
             }
 
-
+            await unitOfWork.ProductRepository.UpdateAsync(id, productDTO);
+            return Ok(new { Message = "Product updated successfully." });
         }
 
-
-        [HttpDelete("Delete-Product/{id}")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
+            var product = await unitOfWork.ProductRepository.GetByIdAsync(id);
 
-            try
+            if (product == null)
             {
-                var product = await unitOfWork.ProductRepository.GetByIdAsync(id);
-
-
-                await unitOfWork.ProductRepository.DeleteAsync(product);
-
-
-                return Ok("Product Deleted successfully.");
+                return NotFound(new { Message = $"Product with ID {id} not found." });
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An Error occurred while Deleting the Product:{ex.Message}");
-            }
+
+            await unitOfWork.ProductRepository.DeleteAsync(product);
+            return Ok(new { Message = "Product deleted successfully." });
         }
-
-
-
     }
 }

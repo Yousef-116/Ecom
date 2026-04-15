@@ -4,88 +4,72 @@ using Ecom.Core.Entites.Product;
 using Ecom.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace Ecom.API.Controllers
 {
     public class ProductRatingsController : BaseController
     {
-        public ProductRatingsController(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
+        private readonly IOutputCacheStore _cacheStore;
+
+        public ProductRatingsController(IUnitOfWork unitOfWork, IMapper mapper, IOutputCacheStore cacheStore) 
+            : base(unitOfWork, mapper)
         {
+            _cacheStore = cacheStore;
         }
 
-        [HttpGet("get-all")]
+        [HttpGet]
+        [OutputCache(Duration = 600, Tags = ["ratings"])]
         public async Task<IActionResult> GetAll()
         {
-            try
+            var ratings = await unitOfWork.ProductRatingRepository.GetAllAsync();
+            if (ratings == null || !ratings.Any())
             {
-                var ratings = await unitOfWork.ProductRatingRepository.GetAllAsync();
-                if (ratings == null || !ratings.Any())
-                {
-                    return NotFound("No ratings found.");
-                }
+                return NotFound(new { Message = "No ratings found." });
+            }
 
-                var ratingsDto = mapper.Map<IEnumerable<ProductRatingDTO>>(ratings);
-                return Ok(ratingsDto);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred while retrieving ratings: {ex.Message}");
-            }
+            var ratingsDto = mapper.Map<IEnumerable<ProductRatingDTO>>(ratings);
+            return Ok(ratingsDto);
         }
 
-        [HttpGet("get-by-product/{productId}")]
+        [HttpGet("product/{productId}")]
+        [OutputCache(Duration = 600, Tags = ["ratings"])]
         public async Task<IActionResult> GetByProductId(int productId)
         {
-            try
+            var ratings = await unitOfWork.ProductRatingRepository.GetAllAsync();
+            var productRatings = ratings.Where(r => r.ProductId == productId).ToList();
+            
+            if (!productRatings.Any())
             {
-                var ratings = await unitOfWork.ProductRatingRepository.GetAllAsync();
-                var productRatings = ratings.Where(r => r.ProductId == productId).ToList();
-                
-                if (!productRatings.Any())
-                {
-                    return NotFound($"No ratings found for product with ID {productId}.");
-                }
+                return NotFound(new { Message = $"No ratings found for product with ID {productId}." });
+            }
 
-                var ratingsDto = mapper.Map<IEnumerable<ProductRatingDTO>>(productRatings);
-                return Ok(ratingsDto);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred while retrieving ratings for the product: {ex.Message}");
-            }
+            var ratingsDto = mapper.Map<IEnumerable<ProductRatingDTO>>(productRatings);
+            return Ok(ratingsDto);
         }
 
-        [HttpPost("add-rating")]
+        [HttpPost]
         [Authorize]
         public async Task<IActionResult> AddRating([FromBody] AddProductRatingDTO ratingDto)
         {
-            if (!ModelState.IsValid)
+            if (ratingDto == null)
             {
-                return BadRequest(ModelState);
+                return BadRequest(new { Message = "Rating data is null." });
             }
 
-            try
+            var product = await unitOfWork.ProductRepository.GetByIdAsync(ratingDto.ProductId);
+            if (product == null)
             {
-                if (ratingDto == null)
-                {
-                    return BadRequest("Rating data is null.");
-                }
-
-                var product = await unitOfWork.ProductRepository.GetByIdAsync(ratingDto.ProductId);
-                if (product == null)
-                {
-                    return NotFound($"Product with ID {ratingDto.ProductId} not found.");
-                }
-
-                ProductRating newRating = mapper.Map<ProductRating>(ratingDto);
-                await unitOfWork.ProductRatingRepository.AddAsync(newRating);
-                
-                return Ok("Rating added successfully.");
+                return NotFound(new { Message = $"Product with ID {ratingDto.ProductId} not found." });
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred while adding the rating: {ex.Message}");
-            }
+
+            var newRating = mapper.Map<ProductRating>(ratingDto);
+            await unitOfWork.ProductRatingRepository.AddAsync(newRating);
+
+            // Evict the cached ratings so that the next GET request fetches fresh data
+            await _cacheStore.EvictByTagAsync("ratings", default);
+            
+            return Ok(new { Message = "Rating added successfully." });
         }
     }
 }

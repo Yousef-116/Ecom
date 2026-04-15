@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+using AutoMapper;
+using Ecom.Core.DTO;
 using Ecom.Core.Entities;
 using Ecom.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -11,41 +12,47 @@ namespace Ecom.API.Controllers
         {
         }
 
-        [HttpGet("get-basket")]
-        public async Task<ActionResult> GetBasket([FromQuery] string id)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<CustomerBasketDTO>> GetBasket(string id)
         {
             var basket = await unitOfWork.CustomerBasketRepository.GetCustomerBasketAsync(id);
-            if (basket == null)
-            {
-                return Ok(new CustomerBasket(id)); // Return empty basket
-            }
-            return Ok(basket);
+            
+            // If basket is null, return a new one mapped to DTO
+            var mappedBasket = mapper.Map<CustomerBasketDTO>(basket ?? new CustomerBasket(id));
+            
+            return Ok(mappedBasket);
         }
 
-        [HttpPost("update-basket")]
-        public async Task<ActionResult> UpdateBasket([FromBody] CustomerBasket basket)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<CustomerBasketDTO>> UpdateBasket(string id, [FromBody] CustomerBasketDTO basketDto)
         {
-            var updatedBasket = await unitOfWork.CustomerBasketRepository.UpdateCustomerBasketAsync(basket);
+            if (basketDto == null)
+            {
+                return BadRequest(new { Message = "Basket data is null." });
+            }
+
+            basketDto.Id = id; // Sync ID from route
+            
+            var basketEntity = mapper.Map<CustomerBasket>(basketDto);
+            var updatedBasket = await unitOfWork.CustomerBasketRepository.UpdateCustomerBasketAsync(basketEntity);
+            
             if (updatedBasket == null)
             {
-                return BadRequest("Failed to update the basket.");
+                return BadRequest(new { Message = "Failed to update the basket." });
             }
-            return Ok(updatedBasket);
-
-
+            
+            return Ok(mapper.Map<CustomerBasketDTO>(updatedBasket));
         }
-        [HttpDelete("delete-basket/{id}")]
+
+        [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteBasket(string id)
         {
             var result = await unitOfWork.CustomerBasketRepository.DeleteCustomerBasketAsync(id);
             if (!result)
             {
-                return NotFound();
+                return NotFound(new { Message = $"Basket with ID {id} not found." });
             }
-            return Ok("deleted succssfuly");
-
-
-
+            return Ok(new { Message = "Basket deleted successfully." });
         }
     }
 }

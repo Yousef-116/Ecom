@@ -23,7 +23,7 @@ namespace Ecom.infrastructure.Repositories.Service
             {
                 var message = new MimeMessage();
 
-                message.From.Add(new MailboxAddress("My Ecom", Configuration["EmailSettings:From"]));
+                message.From.Add(new MailboxAddress("Ecom", Configuration["EmailSettings:From"]));
                 message.To.Add(MailboxAddress.Parse(emailDTO.To));
                 message.Subject = emailDTO.Subject;
 

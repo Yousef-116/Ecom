@@ -14,6 +14,7 @@ namespace Ecom.API
             builder.Services.infrastructureConfiguration(builder.Configuration);
             builder.Services.AddMemoryCache();
             builder.Services.AddControllers();
+            builder.Services.AddOutputCache();
 
             // Swagger setup
             builder.Services.AddEndpointsApiExplorer();
@@ -56,6 +57,7 @@ namespace Ecom.API
             app.UseCors("CORSPolicy");
 
             // Enable authentication and authorization
+            app.UseOutputCache();
             app.UseAuthentication();
             app.UseAuthorization();
 
