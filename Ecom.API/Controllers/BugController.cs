@@ -12,28 +12,6 @@ namespace Ecom.API.Controllers
         {
         }
 
-        // [HttpGet("not-found")]
-        // public async Task<IActionResult> GetNotFound()
-        // {
-        //     var category = await unitOfWork.CategoryRepository.GetByIdAsync(100);
-        //     if(category == null) return NotFound();
-        //     return Ok(category);
-        // }
-        // [HttpGet("not-found")]
-        // public async Task<IActionResult> GetNotFound()
-        // {
-        //     var category = await unitOfWork.CategoryRepository.GetAllAsync(100);
-        //     if(category == null) return NotFound();
-        //     return Ok(category);
-        // }
-        // [HttpGet("not-found")]
-        // public async Task<IActionResult> GetNotFound()
-        // {
-        //     var category = await unitOfWork.CategoryRepository.GetAllAsync(100);
-        //     if(category == null) return NotFound();
-        //     return Ok(category);
-        // }
-
 
     }
 }

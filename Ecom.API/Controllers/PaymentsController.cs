@@ -1,27 +1,33 @@
-﻿using Ecom.Core.Entities;
+using Ecom.Core.Entities;
 using Ecom.Core.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Ecom.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class PaymentsController : ControllerBase
     {
-        private readonly IPaymentService paymentService;
+        private readonly IPaymentService _paymentService;
+
         public PaymentsController(IPaymentService paymentService)
         {
-            this.paymentService = paymentService;
+            _paymentService = paymentService;
         }
 
-
-        [HttpPost("Create")]
-        public async Task<ActionResult<CustomerBasket>> create(string basketId, int? deliveryId)
+        [HttpPost]
+        public async Task<ActionResult<CustomerBasket>> CreateOrUpdatePaymentIntent(string basketId, int? deliveryId)
         {
-            return await paymentService.CreateOrUpdatePaymentAsync(basketId, deliveryId);
+            var basket = await _paymentService.CreateOrUpdatePaymentAsync(basketId, deliveryId);
+            
+            if (basket == null)
+            {
+                return BadRequest(new { Message = "Problem with your basket" });
+            }
+
+            return Ok(basket);
         }
     }
 }
