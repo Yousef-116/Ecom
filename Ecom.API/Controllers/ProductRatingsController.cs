@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using Ecom.Core.DTO;
 using Ecom.Core.Entites.Product;
 using Ecom.Core.Interfaces;
@@ -12,64 +12,74 @@ namespace Ecom.API.Controllers
     {
         private readonly IOutputCacheStore _cacheStore;
 
-        public ProductRatingsController(IUnitOfWork unitOfWork, IMapper mapper, IOutputCacheStore cacheStore) 
-            : base(unitOfWork, mapper)
+        public ProductRatingsController(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            IOutputCacheStore cacheStore
+        ) : base(unitOfWork, mapper)
         {
             _cacheStore = cacheStore;
         }
 
+        // ========================= GET ALL =========================
         [HttpGet]
         [OutputCache(Duration = 600, Tags = ["ratings"])]
         public async Task<IActionResult> GetAll()
         {
             var ratings = await unitOfWork.ProductRatingRepository.GetAllAsync();
-            if (ratings == null || !ratings.Any())
-            {
-                return NotFound(new { Message = "No ratings found." });
-            }
 
-            var ratingsDto = mapper.Map<IEnumerable<ProductRatingDTO>>(ratings);
-            return Ok(ratingsDto);
+            if (ratings == null || !ratings.Any())
+                return NotFound(new { Message = "No ratings found." });
+
+            var result = mapper.Map<IEnumerable<ProductRatingDTO>>(ratings);
+            return Ok(result);
         }
 
+        // ========================= GET BY PRODUCT =========================
         [HttpGet("product/{productId}")]
         [OutputCache(Duration = 600, Tags = ["ratings"])]
         public async Task<IActionResult> GetByProductId(int productId)
         {
-            var ratings = await unitOfWork.ProductRatingRepository.GetAllAsync();
-            var productRatings = ratings.Where(r => r.ProductId == productId).ToList();
-            
-            if (!productRatings.Any())
-            {
-                return NotFound(new { Message = $"No ratings found for product with ID {productId}." });
-            }
+            // ✅ FIX: push filtering to DB layer
+            var ratings = await unitOfWork.ProductRatingRepository
+                .GetByProductIdAsync(productId);
 
-            var ratingsDto = mapper.Map<IEnumerable<ProductRatingDTO>>(productRatings);
-            return Ok(ratingsDto);
+            if (ratings == null || !ratings.Any())
+                return NotFound(new { Message = $"No ratings found for product with ID {productId}." });
+
+            var result = mapper.Map<IEnumerable<ProductRatingDTO>>(ratings);
+            return Ok(result);
         }
 
+        // ========================= CREATE =========================
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> AddRating([FromBody] AddProductRatingDTO ratingDto)
         {
             if (ratingDto == null)
-            {
                 return BadRequest(new { Message = "Rating data is null." });
-            }
+
+            // Optional but smart validation
+            if (ratingDto.Score < 1 || ratingDto.Score > 5)
+                return BadRequest(new { Message = "Rating must be between 1 and 5." });
 
             var product = await unitOfWork.ProductRepository.GetByIdAsync(ratingDto.ProductId);
+
             if (product == null)
-            {
                 return NotFound(new { Message = $"Product with ID {ratingDto.ProductId} not found." });
-            }
 
             var newRating = mapper.Map<ProductRating>(ratingDto);
+
             await unitOfWork.ProductRatingRepository.AddAsync(newRating);
 
-            // Evict the cached ratings so that the next GET request fetches fresh data
+            // ✅ smarter cache eviction
             await _cacheStore.EvictByTagAsync("ratings", default);
-            
-            return Ok(new { Message = "Rating added successfully." });
+
+            return CreatedAtAction(
+                nameof(GetByProductId),
+                new { productId = ratingDto.ProductId },
+                mapper.Map<ProductRatingDTO>(newRating)
+            );
         }
     }
 }

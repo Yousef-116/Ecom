@@ -72,9 +72,9 @@ namespace Ecom.infrastructure.Repositories
 
         }
 
-        public async Task<bool> AddAsync(AddProductDTO productDTO)
+        public async Task<Product> AddAsync(AddProductDTO productDTO)
         {
-            if (productDTO == null) return false;
+            if (productDTO == null) return null;
 
             var product = mapper.Map<Product>(productDTO);
 
@@ -94,7 +94,7 @@ namespace Ecom.infrastructure.Repositories
             await context.Photos.AddRangeAsync(photos);
             await context.SaveChangesAsync();
 
-            return true;
+            return product;
 
         }
 

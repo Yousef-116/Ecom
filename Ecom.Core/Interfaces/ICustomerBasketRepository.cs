@@ -12,7 +12,6 @@ namespace Ecom.Core.Interfaces
         //Task AddToBasketAsync(int basketId, int productId, int quantity);
         Task<CustomerBasket> GetCustomerBasketAsync(string basketId);
         Task<CustomerBasket> UpdateCustomerBasketAsync(CustomerBasket basket);
-
         Task<bool> DeleteCustomerBasketAsync(string basketId);
     }
 }

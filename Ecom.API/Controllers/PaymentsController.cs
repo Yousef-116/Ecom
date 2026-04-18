@@ -17,15 +17,19 @@ namespace Ecom.API.Controllers
             _paymentService = paymentService;
         }
 
+        // POST: api/payments
         [HttpPost]
-        public async Task<ActionResult<CustomerBasket>> CreateOrUpdatePaymentIntent(string basketId, int? deliveryId)
+        public async Task<ActionResult<CustomerBasket>> CreateOrUpdatePaymentIntent(
+            [FromQuery] string basketId,
+            [FromQuery] int? deliveryId)
         {
+            if (string.IsNullOrEmpty(basketId))
+                return BadRequest(new { Message = "BasketId is required." });
+
             var basket = await _paymentService.CreateOrUpdatePaymentAsync(basketId, deliveryId);
-            
+
             if (basket == null)
-            {
-                return BadRequest(new { Message = "Problem with your basket" });
-            }
+                return BadRequest(new { Message = "Problem with your basket." });
 
             return Ok(basket);
         }

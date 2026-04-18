@@ -14,7 +14,7 @@ namespace Ecom.Core.Interfaces
     {
         // for future specific methods related to product repository
         Task<ReturnProductListDTO> GetAllAsync(ProductParams productParams);
-        Task<bool> AddAsync(AddProductDTO product);
+        Task<Product> AddAsync(AddProductDTO product);
         Task<bool> UpdateAsync(int id ,UpdateProductDTO product);
         Task DeleteAsync(Product product);
     }

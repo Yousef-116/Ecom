@@ -15,11 +15,60 @@ namespace Ecom.API.Controllers
         {
         }
 
+        // ========================= REGISTER =========================
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterDTO registerDto)
+        public async Task<IActionResult> Register([FromBody] RegisterDTO dto)
         {
-            var result = await unitOfWork.Auth.RegisterAsync(registerDto);
-            return result.Success ? Ok(result.Message) : BadRequest(result.Message);
+            var result = await unitOfWork.Auth.RegisterAsync(dto);
+
+            return result.Success
+                ? StatusCode(201, new { Message = result.Message })
+                : BadRequest(new { Message = result.Message });
+        }
+
+        // ========================= LOGIN =========================
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginDTO loginDTO)
+        {
+            string token = await unitOfWork.Auth.LoginAsync(loginDTO);
+            if (token.StartsWith("please"))
+            {
+                return BadRequest(new ResponseAPI(400, token));
+            }
+
+            Response.Cookies.Append("token", token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                IsEssential = true,
+                Expires = DateTime.UtcNow.AddDays(1)
+            });
+
+            return Ok(new ResponseAPI(200, "Login successful"));
+        }
+
+        //[HttpPost("logout")]
+        //public IActionResult Logout()
+        //{
+        //    Response.Cookies.Append("token", "", new CookieOptions
+        //    {
+        //        HttpOnly = true,
+        //        Secure = true,
+        //        SameSite = SameSiteMode.None,
+        //        IsEssential = true,
+        //        Domain = "localhost",
+        //        Expires = DateTime.Now.AddDays(-1)
+        //    });
+        //    return Ok(new { Message = "Logged out successfully" });
+        //}
+        // ========================= LOGOUT =========================
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("token");
+
+            return NoContent();
         }
 
         [Authorize]
@@ -48,41 +97,7 @@ namespace Ecom.API.Controllers
             return result ? Ok(new { Message = "Address updated successfully" }) : BadRequest(new { Message = "Address update failed" });
         }
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDTO loginDTO)
-        {
-            string token = await unitOfWork.Auth.LoginAsync(loginDTO);
-            if (token.StartsWith("please"))
-            {
-                return BadRequest(new ResponseAPI(400, token));
-            }
 
-            Response.Cookies.Append("token", token, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.None,
-                IsEssential = true,
-                Expires = DateTime.UtcNow.AddDays(1)
-            });
-
-            return Ok(new ResponseAPI(200, "Login successful"));
-        }
-
-        [HttpPost("logout")]
-        public IActionResult Logout()
-        {
-            Response.Cookies.Append("token", "", new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.None,
-                IsEssential = true,
-                Domain = "localhost",
-                Expires = DateTime.Now.AddDays(-1)
-            });
-            return Ok(new { Message = "Logged out successfully" });
-        }
 
         [Authorize]
         [HttpGet("user-name")]
